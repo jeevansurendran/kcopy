@@ -16,6 +16,7 @@ To install KCopy, ensure you have Go installed on your system, then run:
 ```sh
 go install jeevansurendran/kcopy/cmd@latest
 ```
+PS: Need to make sure if `$GOBIN` is configured to the `$PATH` variable
 
 ## Usage
 kcopy [flags]
@@ -32,7 +33,7 @@ kcopy [flags]
 
 ## Example
 1. Copying 100 messages from topic "source-topic" to local no auth kafka cluster.
-```sh
+```shell
 kcopy\
 -s pkc.aws.confluent.cloud:9092 \
 -X tls.enable=true -X sasl.mechanism=PLAIN -X  sasl.user=username -X sasl.password=password \
@@ -41,12 +42,12 @@ kcopy\
 -c 100 
 ```
 2. Copying 100 messages from one cluster to another with different topics, partitions, and cluster names.
-```sh
+```shell
 kcopy\
 -s pkc-1.aws.confluent.cloud:9092 \
 -d pkc-2.aws.confluent.cloud:9092 \
 -X tls.enable=true -X sasl.mechanism=PLAIN -X  sasl.user=username -X sasl.password=password \
--Y tls.enable=true -X sasl.mechanism=PLAIN -X  sasl.user=username -X sasl.password=password \
+-Y tls.enable=true -Y sasl.mechanism=PLAIN -Y  sasl.user=username -Y sasl.password=password \
 -t source-topic:destination-topic \
 -p 4:7 \
 -o 3309159 \
