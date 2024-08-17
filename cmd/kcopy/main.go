@@ -35,3 +35,8 @@ func init() {
 	rootCmd.Flags().Int64VarP(&kafkaCopy.Count, "count", "c", 0, "Set the total number of messages to copy.")
 	rootCmd.MarkFlagRequired("count")
 }
+func main() {
+	if err := rootCmd.Execute(); err != nil {
+		panic(err)
+	}
+}
