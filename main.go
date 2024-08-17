@@ -190,15 +190,15 @@ func main() {
 			defer close()
 		},
 	}
-	rootCmd.Flags().StringArrayVarP(&kcopy.Source.Addrs, "source-broker", "s", []string{}, "Source broker addresses")
+	rootCmd.Flags().StringArrayVarP(&kcopy.Source.Addrs, "source-broker", "s", []string{}, "Set the source broker addresses.")
 	rootCmd.MarkFlagRequired("source-broker")
-	rootCmd.Flags().StringArrayVarP(&kcopy.Destination.Addrs, "destination-broker", "d", []string{"localhost:9092"}, "Source broker addresses")
-	rootCmd.Flags().StringArrayVarP(&kcopy.Source.KeyValue, "X", "X", []string{}, "Set configuration for source broker (can be specified multiple times).")
-	rootCmd.Flags().StringArrayVarP(&kcopy.Destination.KeyValue, "Y", "Y", []string{}, "Set configuration for destination broker (can be specified multiple times).")
-	rootCmd.Flags().StringVarP(&kcopy.Topic.Input, "topic", "t", "", "Set the topic to copy from. If we want to copy from to a different topic, we can use the format source:destination")
+	rootCmd.Flags().StringArrayVarP(&kcopy.Destination.Addrs, "destination-broker", "d", []string{"localhost:9092"}, "Set the destination broker addresses.")
+	rootCmd.Flags().StringArrayVarP(&kcopy.Source.KeyValue, "X", "X", []string{}, "Set configuration for the source broker.")
+	rootCmd.Flags().StringArrayVarP(&kcopy.Destination.KeyValue, "Y", "Y", []string{}, "Set configuration for the destination broker.")
+	rootCmd.Flags().StringVarP(&kcopy.Topic.Input, "topic", "t", "", "Set the topic to copy from. To copy to a different topic, use the format source:destination.")
 	rootCmd.MarkFlagRequired("topic")
-	rootCmd.Flags().StringVarP(&kcopy.Partition.Input, "partition", "p", "", "Set the partition to copy from. If we want to copy from to a different partition, we can use the format source:destination. (If nothing is specified, it will default to 0)")
-	rootCmd.Flags().Int64VarP(&kcopy.Offset, "offset", "o", -1, "Set the offset to copy from. -1 is latest and -2 is oldest. Defaults to -1.")
+	rootCmd.Flags().StringVarP(&kcopy.Partition.Input, "partition", "p", "", "Set the partition to copy from. To copy to a different partition, use the format source:destination. Defaults to 0.")
+	rootCmd.Flags().Int64VarP(&kcopy.Offset, "offset", "o", -1, "Set the offset to copy from. Use -1 for the latest offset and -2 for the oldest offset. Defaults to -1.")
 	rootCmd.Flags().Int64VarP(&kcopy.Count, "count", "c", 0, "Set the total number of messages to copy.")
 	rootCmd.MarkFlagRequired("count")
 	if err := rootCmd.Execute(); err != nil {
