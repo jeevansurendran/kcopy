@@ -15,7 +15,7 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			close, err := kafkaCopy.Copy()
 			if err != nil {
-				log.Fatalf("error copying message :%v", err)
+				log.Fatalf("error copying messages: %v", err)
 			}
 			defer close()
 		},
@@ -37,6 +37,6 @@ func init() {
 }
 func main() {
 	if err := rootCmd.Execute(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }

@@ -3,9 +3,12 @@ package kcopy
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 
 	"github.com/IBM/sarama"
 )
@@ -142,36 +145,47 @@ func (k *KCopy) Copy() (func(), error) {
 	}
 	var wg sync.WaitGroup
 	wg.Add(2)
+	var done = make(chan os.Signal, 2)
+	signal.Notify(done, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
 		defer wg.Done()
 		for err := range producer.Errors() {
-			log.Println("Failed to produce message", err)
+			log.Printf("failed to produce message: %v", err)
+			done <- syscall.SIGINT
 		}
 	}()
 	go func() {
-		defer wg.Done()
 		var count int64
-		fmt.Printf("Copying %d messages from %s (%s/p-%d/o-%d) to %s (%s/p-%d) \n", k.Count, strings.Join(k.Source.Addrs, ", "), k.Topic.Source, k.Partition.Source, k.Offset, strings.Join(k.Destination.Addrs, ", "), k.Topic.Destination, k.Partition.Destination)
-		for message := range pc.Messages() {
-			producer.Input() <- &sarama.ProducerMessage{
-				Topic:     k.Topic.Destination,
-				Key:       sarama.ByteEncoder(message.Key),
-				Value:     sarama.ByteEncoder(message.Value),
-				Partition: k.Partition.Destination,
-			}
-			if count == k.Count {
-				break
-			} else {
-				count++
+		defer producer.AsyncClose()
+		defer wg.Done()
+		defer func() { log.Printf("copied %d messages", count) }()
+		log.Printf("copying %d messages from %s (%s/p-%d/o-%d) to %s (%s/p-%d)", k.Count, strings.Join(k.Source.Addrs, ", "), k.Topic.Source, k.Partition.Source, k.Offset, strings.Join(k.Destination.Addrs, ", "), k.Topic.Destination, k.Partition.Destination)
+		for {
+			select {
+			case <-done:
+				return
+			case message := <-pc.Messages():
+				producer.Input() <- &sarama.ProducerMessage{
+					Topic:     k.Topic.Destination,
+					Key:       sarama.ByteEncoder(message.Key),
+					Value:     sarama.ByteEncoder(message.Value),
+					Partition: k.Partition.Destination,
+				}
+				if count == k.Count {
+					return
+				} else {
+					count++
+				}
 			}
 		}
-		// This usually means completed.
-		producer.AsyncClose()
 	}()
 	wg.Wait()
-	fmt.Printf("Copying completed\n")
 	return func() {
-		pc.Close()
-		consumer.Close()
+		if err := pc.Close(); err != nil {
+			log.Printf("error on close partition consumer: %v", err)
+		}
+		if err := consumer.Close(); err != nil {
+			log.Printf("error on close consumer: %v", err)
+		}
 	}, nil
 }
