@@ -14,7 +14,7 @@ It's particularly useful when you have binary data in Kafka and want to copy it 
 
 To install KCopy, ensure you have Go installed on your system, then run:
 ```sh
-go install github.com/jeevansurendran/kcopy/cmd/kcopy@latest
+go install github.com/jeevansurendran/kcopy/cmd/kcopy@main
 ```
 PS: Need to make sure if `$GOBIN` is configured to the `$PATH` variable
 
